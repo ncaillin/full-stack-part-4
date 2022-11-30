@@ -1,0 +1,10 @@
+GET http://localhost:8080/blogs12312
+###
+POST http://localhost:8080/blogs
+Content-Type: application/json
+
+{
+    "author": "test author",
+    "url": "test-url",
+    "likes": 2
+}
