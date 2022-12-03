@@ -27,6 +27,5 @@ module.exports = {
       'error',
       'never'
     ]
-  },
-  'globals': 'next'
+  }
 }
