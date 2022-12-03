@@ -299,3 +299,126 @@ describe('most blogs', () => {
     )
   })
 })
+
+describe('most likes', () => {
+  const listwithOne = [
+    {
+      _id: '63872c6cc82815464b23307a',
+      title: 'Flea rearing for beginners',
+      author: 'Kiwi',
+      url: 'https://www.notafakeurl.com/blogs/1.html',
+      likes: 12,
+      __v: 0
+    }
+  ]
+  const listWithMany = [
+    {
+      _id: '63872c6cc82815464b23307a',
+      title: 'Flea rearing for beginners',
+      author: 'Kiwi',
+      url: 'https://www.notafakeurl.com/blogs/1.html',
+      likes: 6,
+      __v: 0
+    },
+    {
+      _id: '63872e3d83e2ba87161809e4',
+      title: 'How to cook Bacon',
+      author: 'Apple',
+      url:'https://www.notafakeurl.com/blogs/2.html',
+      likes: 3,
+      __v: 0
+    },
+    {
+      _id: '63872e6c60ea5fd58adbb549',
+      title: 'Twiddling your thumbs',
+      author: 'Pomegranate',
+      url: 'https://www.notafakeurl.com/blogs/3.html',
+      likes: 4,
+      __v: 0
+    },
+    {
+      _id: '63872e6c60ea5fd58adbb549',
+      title: 'Twiddling your thumbs',
+      author: 'Pomegranate',
+      url: 'https://www.notafakeurl.com/blogs/3.html',
+      likes: 3,
+      __v: 0
+    }
+  ]
+
+  const listWithDuplicates = [
+    {
+      _id: '63872c6cc82815464b23307a',
+      title: 'Flea rearing for beginners',
+      author: 'Kiwi',
+      url: 'https://www.notafakeurl.com/blogs/1.html',
+      likes: 12,
+      __v: 0
+    },
+    {
+      _id: '63872e3d83e2ba87161809e4',
+      title: 'How to cook Bacon',
+      author: 'Apple',
+      url:'https://www.notafakeurl.com/blogs/2.html',
+      likes: 12,
+      __v: 0
+    },
+    {
+      _id: '63872e6c60ea5fd58adbb549',
+      title: 'Twiddling your thumbs',
+      author: 'Pomegranate',
+      url: 'https://www.notafakeurl.com/blogs/3.html',
+      likes: 5,
+      __v: 0
+    },
+    {
+      _id: '63872e3d83e2ba87161809e4',
+      title: 'How to cook Bacon',
+      author: 'Apple',
+      url:'https://www.notafakeurl.com/blogs/2.html',
+      likes: 1,
+      __v: 0
+    },
+    {
+      _id: '63872e6c60ea5fd58adbb549',
+      title: 'Twiddling your thumbs',
+      author: 'Pomegranate',
+      url: 'https://www.notafakeurl.com/blogs/3.html',
+      likes: 8,
+      __v: 0
+    }
+  ]
+  
+  test('empty list returns null', () => {
+    const result = listHelper.mostLikes([])
+    expect(result).toEqual(null)
+  })
+
+  test('list with one returns itself', () => {
+    const result = listHelper.mostLikes(listwithOne)
+    expect(result).toEqual(
+      {
+        author: 'Kiwi',
+        likes: 12
+      }
+    )
+  })
+  test('list with many works correctly', () => {
+    const result = listHelper.mostLikes(listWithMany)
+    expect(result).toEqual(
+      {
+        author: 'Pomegranate',
+        likes: 7
+      }
+    )
+  })
+  test('list with duplicates returns author where last blog occurs first', () => {
+    const result = listHelper.mostLikes(listWithDuplicates)
+    expect(result).toEqual(
+      {
+        author: 'Apple',
+        likes: 13
+      }
+    )
+  })
+})

@@ -67,10 +67,42 @@ const mostBlogs = (blogs) => {
   return {author: maxAuthor.name, blogs: maxAuthor.blogs}
 }
 
+const mostLikes = (blogs) => {
+  if (lodash.isEqual(blogs, [])) return null
+  
+  var authors = []
+  var maxLikes = 0
+  var maxAuthor = {}
+  
+  blogs.forEach(blog => {
+    const author = authors.find(author => author.name === blog.author)
+
+    if (!author) { // author not yet accounted for, initialising
+      authors = authors.concat( { name: blog.author, likes: blog.likes } )
+    } else { // author exists, adding likes to total
+      authors = authors.map(author => {
+        if (blog.author === author.name) {
+          return { name: author.name, likes: author.likes + blog.likes }
+        } else {
+          return author
+        }
+      })
+    }
+
+    // max likes logic -- need extra var incase undef earlier
+    const authorForMaxLikesComparison = authors.find(author => author.name === blog.author)
+    if (authorForMaxLikesComparison.likes > maxLikes) {
+      maxLikes = authorForMaxLikesComparison.likes
+      maxAuthor = authorForMaxLikesComparison
+    }
+  })
+  return { author: maxAuthor.name, likes: maxAuthor.likes }
+}
 
 module.exports = {
   dummy,
   totalLikes,
   favouriteBlog,
-  mostBlogs
+  mostBlogs,
+  mostLikes
 }
