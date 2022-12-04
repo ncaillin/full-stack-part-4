@@ -30,23 +30,47 @@ beforeEach(async () => {
 
 describe ('GET /blog', () => {
   test('response is in JSON format', async () => {
-    const response = await api.get('/blogs')
+    const response = await api.get('/api/blogs')
     expect(response.header['content-type']).toMatch(/application\/json/)
   })
   test('get returns correct amount', async () => {
-    const response = await api.get('/blogs')
+    const response = await api.get('/api/blogs')
     expect(response.body).toHaveLength(initialBlogs.length)
   })
-  test('specific blog title in /blogs GET', async () => {
-    const response = await api.get('/blogs')
+  test('specific blog title in /api/blogs GET', async () => {
+    const response = await api.get('/api/blogs')
     const titles = response.body.map(response => response.title)
     expect(titles).toContain('ghast tears')
   })
   test('unique identifier is id, not _id', async () => {
-    const response = await api.get('/blogs')
+    const response = await api.get('/api/blogs')
     expect(response.body[0].id).toBeDefined()
   })
 })
+describe('POST /api/blogs', () => {
+  const blogToPost = {
+    title: 'Posting to your Database',
+    author: 'Maple',
+    url: 'catsmakingblogs.com/POST-requests',
+    likes: 2
+  }
+  test('POST returns blog as response', async () => {
+    const response = await api.post('/api/blogs').send(blogToPost)
+    expect(response.body.title).toEqual('Posting to your Database')
+  })
+  test('Correct number of entries in DB', async () => {
+    await api.post('/api/blogs').send(blogToPost)
+    const blogs = await Blog.find({})
+    expect(blogs.length).toEqual(initialBlogs.length + 1)
+  })
+  test('Correct blog added to DB', async () => {
+    await api.post('/api/blogs').send(blogToPost)
+    const blogs = await Blog.find({})
+    const titles = blogs.map(blog => blog.title)
+    expect(titles).toContain('Posting to your Database')
+  })
+})
+
 
 afterAll(() => {
   mongoose.connection.close()

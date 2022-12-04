@@ -18,7 +18,7 @@ mongoose
   .catch((err) => logger.error(err))
 
 
-app.use('/blogs', blogRouter)
+app.use('/api/blogs', blogRouter)
 app.use(middleware.unknownEndpoint)
 blogRouter.use(middleware.errorHandler)
 module.exports = app
