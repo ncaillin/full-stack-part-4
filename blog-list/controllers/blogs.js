@@ -5,12 +5,13 @@ const blogRouter = express.Router()
 blogRouter.use(express.json())
 
 blogRouter.get(
-  '/', (request, response) => {
-    Blog
-      .find({})
-      .then(result => {
-        response.json(result)
-      })
+  '/', async (request, response, next) => {
+    try {
+      const blogs = await Blog.find({})
+      response.json(blogs)
+    } catch(error) {
+      next(error)
+    }
   }
 )
 
