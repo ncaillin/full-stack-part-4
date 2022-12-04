@@ -54,6 +54,12 @@ describe('POST /api/blogs', () => {
     url: 'catsmakingblogs.com/POST-requests',
     likes: 2
   }
+  const blogWithoutLikesSpecified = {
+    title: 'No Likes on your blog?',
+    author: 'the likeable Jerry',
+    url: 'how-to-get-likes.com'
+  }
+
   test('POST returns blog as response', async () => {
     const response = await api.post('/api/blogs').send(blogToPost)
     expect(response.body.title).toEqual('Posting to your Database')
@@ -69,6 +75,13 @@ describe('POST /api/blogs', () => {
     const titles = blogs.map(blog => blog.title)
     expect(titles).toContain('Posting to your Database')
   })
+  test('if likes is missing, defaults to zero', async () => {
+    const response = await api.post('/api/blogs').send(blogWithoutLikesSpecified)
+    expect(response.body.likes).toEqual(0)
+    const blog = await Blog.find({ title: 'No Likes on your blog?' })
+    expect(blog[0].likes).toEqual(0)
+  })
+
 })
 
 
