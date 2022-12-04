@@ -59,6 +59,16 @@ describe('POST /api/blogs', () => {
     author: 'the likeable Jerry',
     url: 'how-to-get-likes.com'
   }
+  const blogWithoutTitle = {
+    author: 'foobar',
+    url: 'asdasd.com',
+    likes: 2
+  }
+  const blogWithoutURL = {
+    author: 'lemon slice',
+    title: 'how to cut a lemon',
+    likes: 12
+  }
 
   test('POST returns blog as response', async () => {
     const response = await api.post('/api/blogs').send(blogToPost)
@@ -80,6 +90,12 @@ describe('POST /api/blogs', () => {
     expect(response.body.likes).toEqual(0)
     const blog = await Blog.find({ title: 'No Likes on your blog?' })
     expect(blog[0].likes).toEqual(0)
+  })
+  test('if url or title is missing, 400', async () => {
+    const missingUrlReq = await api.post('/api/blogs').send(blogWithoutURL)
+    const missingTitleReq = await api.post('/api/blogs').send(blogWithoutTitle)
+    expect(missingUrlReq.status).toEqual(400)
+    expect(missingTitleReq.status).toEqual(400)
   })
 
 })
