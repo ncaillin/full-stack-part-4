@@ -16,14 +16,13 @@ blogRouter.get(
 )
 
 blogRouter.post(
-  '/', (request,response, next) => {
-    const blog = new Blog(request.body)
-    blog
-      .save()
-      .then(result => {
-        response.json(result)
-      })
-      .catch((err) => next(err))
+  '/', async (request,response, next) => {
+    try {
+      const blog = await new Blog(request.body).save()
+      response.json(blog)
+    } catch(error) {
+      next(error)
+    }
   }
 )
 
