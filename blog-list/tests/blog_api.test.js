@@ -42,6 +42,10 @@ describe ('GET /blog', () => {
     const titles = response.body.map(response => response.title)
     expect(titles).toContain('ghast tears')
   })
+  test('unique identifier is id, not _id', async () => {
+    const response = await api.get('/blogs')
+    expect(response.body[0].id).toBeDefined()
+  })
 })
 
 afterAll(() => {
