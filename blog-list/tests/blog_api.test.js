@@ -100,6 +100,30 @@ describe('delete requests', () => {
     
   })
 })
+describe('put requests', () => {
+  test('id remains unchanged, change reflected in DB', async () => {
+    const blogs = await api.get('/api/blogs')
+    const id = blogs.body[0].id
+    await api.put(`/api/blogs/${id}`).send({author: 'this is a new author'})
+    const blog = await Blog.findById(id)
+    expect(blog.author).toEqual('this is a new author')
+  })
+  test('returns changed note', async () => {
+    const blogs = await api.get('/api/blogs')
+    const newLikes = 1234
+    const id = blogs.body[0].id
+    const expectedResult = {...blogs.body[0], likes: newLikes}
+    const response = await api.put(`/api/blogs/${id}`).send({likes: newLikes})
+    expect(response.body).toEqual(expectedResult)
+  })
+  test('returns 200 on success', async () => {
+    const blogs = await api.get('/api/blogs')
+    const newLikes = 1234
+    const id = blogs.body[0].id
+    const response = await api.put(`/api/blogs/${id}`).send({likes: newLikes})
+    expect(response.status).toEqual(200)
+  })
+})
 
 
 
