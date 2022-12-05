@@ -1,10 +1,10 @@
 GET http://localhost:8080/blogs
 ###
-POST http://localhost:8080/api/blogs
+POST http://localhost:8080/api/users
 Content-Type: application/json
 
 {
-    "author": "test author",
-    "url": "test-url",
-    "likes": 2
+    "username": "Kiwi123",
+    "name": "Kiwi Forsberg",
+    "password": "chicken123"
 }
