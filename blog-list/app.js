@@ -20,5 +20,5 @@ mongoose
 
 app.use('/api/blogs', blogRouter)
 app.use(middleware.unknownEndpoint)
-blogRouter.use(middleware.errorHandler)
+app.use(middleware.errorHandler)
 module.exports = app
