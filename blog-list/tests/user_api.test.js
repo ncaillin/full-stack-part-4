@@ -40,6 +40,60 @@ describe('when there is one user in DB', () => {
 
   }, 100000)
 
+  test('responds with appropriate error if username < 3', async () => {
+    const newUser = {
+      username: 'yo',
+      name: 'jerry',
+      password: 'test'
+    }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect({error: 'username must be at least 3 characters long'})
+  })
+
+  test('responds with appropriate error if password < 3', async () => {
+    const newUser = {
+      username: 'Maple1234',
+      name: 'Maple',
+      password: 'yo'
+    }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect({error: 'password must be at least 3 characters long'})
+  })
+
+  test('responds with appropriate error if username not unique', async () => {
+    const newUser = {
+      username: 'root',
+      name: 'Kiwi',
+      password: 'admin'
+    }
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+      .expect({error: 'username must be unique'})
+  })
+
+  test('invalid Users not added to DB', async () => {
+    const atStartDB = await helper.usersinDB()
+    const newUser = {
+      username: 'Maple1234',
+      name: 'Maple',
+      password: 'yo'
+    }
+    await api
+      .post('/api/users')
+      .send(newUser)
+    const atEndDB = await helper.usersinDB()
+    expect(atStartDB.length).toEqual(atEndDB.length)
+    expect(atEndDB.map(u=>u.username).includes(newUser.username)).toEqual(false)
+  })
+
   test('GET works appropriately', async () => {
 
     const response = await api
