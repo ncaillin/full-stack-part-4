@@ -1,4 +1,5 @@
 const logger = require('./logger')
+const jwt = require('jsonwebtoken')
 
 const errorHandler = (error, request, response, next) => {
   if (error.name === 'ValidationError') {
@@ -25,9 +26,16 @@ const tokenExtractor = (request, response, next) => {
   }
   next()
 }
+const userExtractor = (request, response, next) => {
+  if(request.token) {
+    request.user = jwt.decode(request.token, process.env.SECRET)
+  }
+  next()
+}
 
 module.exports = {
   errorHandler,
   unknownEndpoint,
-  tokenExtractor
+  tokenExtractor,
+  userExtractor
 }
