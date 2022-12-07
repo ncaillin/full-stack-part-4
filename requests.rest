@@ -1,10 +1,31 @@
 GET http://localhost:8080/blogs
 ###
+// new blog
+POST http://localhost:8080/api/blogs
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImNhaWxsaW4yIiwiaWQiOiI2MzkwNDJjMmQ2MmIyYTA4MmFjZWVhYmEiLCJpYXQiOjE2NzAzOTkzMzB9.fdrAKFjCAqal6p_NxT_T9Ihul5p5DQS-GDEwd_0Mgq8 
+
+{
+    "title": "afusfdgdfgd",
+    "author": "asdfhossfsdd",
+    "url": "sfohsdfsdsf"
+}
+###
+//new user
 POST http://localhost:8080/api/users
 Content-Type: application/json
 
 {
-    "username": "Kiwi123",
-    "name": "Kiwi Forsberg",
-    "password": "chicken123"
+    "username": "caillin2",
+    "password": "foobar",
+    "name": "caillin"
+}
+###
+//login
+POST http://localhost:8080/api/login
+Content-Type: application/json
+
+{
+    "username": "caillin2",
+    "password": "foobar"
 }
