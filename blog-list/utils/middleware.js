@@ -5,8 +5,12 @@ const errorHandler = (error, request, response, next) => {
     logger.error('Please check fields of request')
     return response.status(400).send({'error': error.name})
   }
+  if (error.name === 'JsonWebTokenError') {
+    return response.status(400).send({error: 'missing or invalid token'})
+  }
   logger.error(error.name)
   response.status(500).end()
+  next(error)
 }
 
 const unknownEndpoint = (request, response) => {
