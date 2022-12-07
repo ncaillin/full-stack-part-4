@@ -62,6 +62,13 @@ blogRouter.delete(
   '/:id', async (request, response, next) => {
     try  {
       const id = request.params.id
+      const decodedToken = jwt.verify(request.token, process.env.SECRET)
+      const blog = await Blog.findById(id)
+
+      if (!(decodedToken.id === String(blog.user))) {
+        return response.status(401).send({error: 'only the user who created a blog can delete it'})
+      }
+
       await Blog.findByIdAndDelete(id)
       response.status(204).end()
 
