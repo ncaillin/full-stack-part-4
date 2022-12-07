@@ -72,61 +72,136 @@ describe('POST /api/blogs', () => {
 
   test('POST returns blog as response', async () => {
     const users = await helper.usersinDB()
-    const userID = users[0]._id
-    const response = await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+    const response = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send({...vars.blogToPost})
     expect(response.body.title).toEqual(vars.blogToPost.title)
   })
   test('Correct number of entries in DB', async () => {
     const users = await helper.usersinDB()
-    const userID = users[0]._id
-    await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogToPost)
     const blogs = await Blog.find({})
-    expect(blogs.length).toEqual(vars.initialBlogs.length + 1)
+    expect(blogs.length).toEqual(3)
   })
   test('Correct blog added to DB', async () => {
     const users = await helper.usersinDB()
-    const userID = users[0]._id
-    await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogToPost)
     const blogs = await Blog.find({})
     const titles = blogs.map(blog => blog.title)
     expect(titles).toContain(vars.blogToPost.title)
   })
   test('if likes is missing, defaults to zero', async () => {
     const users = await helper.usersinDB()
-    const userID = users[0]._id
-    const response = await api.post('/api/blogs').send({...vars.blogWithoutLikesSpecified, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+    const response = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogWithoutLikesSpecified)
     expect(response.body.likes).toEqual(0)
     const blog = await Blog.find({ title: vars.blogWithoutLikesSpecified.title })
     expect(blog[0].likes).toEqual(0)
   })
   test('if url or title is missing, 400', async () => {
+    
     const users = await helper.usersinDB()
-    const userID = users[0]._id
-    const missingUrlReq = await api.post('/api/blogs').send({...vars.blogWithoutURL, user: userID})
-    const missingTitleReq = await api.post('/api/blogs').send({...vars.blogWithoutTitle, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+    const missingUrlReq = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogWithoutURL)
+    const missingTitleReq = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogWithoutTitle)
     expect(missingUrlReq.status).toEqual(400)
     expect(missingTitleReq.status).toEqual(400)
   })
   test('blog ID appended to user', async () => {
     var users = await helper.usersinDB()
-    const userID = users[0]._id
-    const newBlog = await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+    const newBlog = await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(vars.blogToPost)
     users = await helper.usersinDB()
     expect(users[0].blogs.includes((newBlog.body.id))).toEqual(true)
+  })
+  test('401 if token not provided', async () => {
+    const response = await api
+      .post('/api/blogs')
+      .send(vars.blogToPost)
+    expect(response.status).toEqual(401)
   })
 
 })
 describe('delete requests', () => {
   test('returns 204 on success', async () => {
+    var users = await helper.usersinDB()
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+
     const blogsReq = await api.get('/api/blogs')
     const id = blogsReq.body[0].id
-    const response = await api.del(`/api/blogs/${id}`)
+    const response = await api
+      .del(`/api/blogs/${id}`)
+      .set('Authorization', `bearer ${String(token)}`)
     expect(response.status).toEqual(204)
   })
   test('blog is removed from DB', async () => {
+    var users = await helper.usersinDB()
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
     const blogsReq = await api.get('/api/blogs')
     const id = blogsReq.body[0].id
-    await api.del(`/api/blogs/${id}`)
+    await api
+      .del(`/api/blogs/${id}`)
+      .set('Authorization', `bearer ${String(token)}`)
     const search = await Blog.findById(id)
     expect(search).toEqual(null)
     

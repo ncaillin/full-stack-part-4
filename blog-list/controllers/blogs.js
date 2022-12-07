@@ -34,7 +34,6 @@ blogRouter.get(
 blogRouter.post(
   '/', async (request,response, next) => {
     try {
-      
       if (!request.user) {
         return response.status(401).json({error: 'token missing or invalid'})
       }

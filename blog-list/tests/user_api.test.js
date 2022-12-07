@@ -29,7 +29,17 @@ describe('when there is one user in DB and one blog in DB', () => {
       user: userID
     }
 
-    await await api.post('/api/blogs').send(startingBlog)
+    const users = await helper.usersinDB()
+    const userDetails = {username: users[0].username, password: 'secret'}
+    const loginReq = await api
+      .post('/api/login')
+      .send(userDetails)
+    const token = loginReq.body.token
+
+    await await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${String(token)}`)
+      .send(startingBlog)
 
   })
 
