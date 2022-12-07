@@ -3,11 +3,12 @@ const bcrypt = require('bcrypt')
 const app = require('../app')
 const supertest = require('supertest')
 const helper = require('./user_test_helper')
-const { default: mongoose } = require('mongoose')
+const Blog = require('../models/blog')
+const mongoose = require('mongoose')
 
 const api = supertest(app)
 
-describe('when there is one user in DB', () => {
+describe('when there is one user in DB and one blog in DB', () => {
 
   beforeEach(async () => {
     await User.deleteMany({})
@@ -15,6 +16,21 @@ describe('when there is one user in DB', () => {
 
     const newUser = new User({username: 'root', name: 'Caillin', passwordHash})
     await newUser.save()
+
+    const user = await helper.usersinDB()
+    const userID = user[0]._id
+
+    await Blog.deleteMany({})
+
+    const startingBlog = {
+      title: 'test blog!',
+      author: 'Caillin',
+      url: 'localhost:8080/api/blogs',
+      user: userID
+    }
+
+    await await api.post('/api/blogs').send(startingBlog)
+
   })
 
   test('User creation succeeds with fresh user', async () => {
@@ -104,6 +120,16 @@ describe('when there is one user in DB', () => {
     expect(body.length).toEqual(1)
     const usernames = body.map(u => u.username)
     expect(usernames).toContain('root')
+  })
+
+  test('GET populates correctly', async () => {
+    const blogs = await Blog.find({})
+    const blog = blogs[0]
+
+    const response = await api
+      .get('/api/users')
+    const titles = response.body[0].blogs.map(b => b.title)
+    expect(titles).toContain(blog.title)
   })
 
   afterAll(() => {

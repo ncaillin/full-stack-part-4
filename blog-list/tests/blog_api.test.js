@@ -2,18 +2,30 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const vars = require('./blog_api_vars')
+const helper = require('./user_test_helper')
+const bcrypt = require('bcrypt')
 
 const api = supertest(app)
 
 
-
 beforeEach(async () => {
   await Blog.deleteMany({})
-  let blogObject = new Blog(vars.initialBlogs[0])
-  await blogObject.save()
-  blogObject = new Blog(vars.initialBlogs[1])
-  await blogObject.save()
+  await User.deleteMany({})
+  const passwordHash = await bcrypt.hash('secret', 10)
+
+  const newUser = new User({username: 'root', name: 'Caillin', passwordHash})
+  await newUser.save()
+
+  const usersinDB = await helper.usersinDB()
+  const userID = usersinDB[0]._id
+
+  var blog = new Blog({...vars.initialBlogs[0], user: userID})
+  await blog.save()
+  blog = new Blog({...vars.initialBlogs[1], user: userID})
+  await blog.save()
+
 })
 
 describe ('GET /blog', () => {
@@ -38,10 +50,11 @@ describe ('GET /blog', () => {
 
 describe('GET one blog', () => {
   test('works correctly with one ID', async () => {
-    const blogs = await api.get('/api/blogs')
-    const response = await api.get(`/api/blogs/${blogs.body[0].id}`)
+    const blogs = await Blog.find({}).populate('user')
+    const response = await api.get(`/api/blogs/${blogs[0].id}`)
     expect(response.status).toEqual(200)
-    expect(response.body).toEqual(blogs.body[0])
+    expect(response.body.title).toEqual(blogs[0].title)
+    expect(response.body.user.username).toEqual(blogs[0].user.username)
   })
   test('returns 404 when ID not found', async () => {
     const blogs = await api.get('/api/blogs')
@@ -53,34 +66,53 @@ describe('GET one blog', () => {
 })
 
 
+
 describe('POST /api/blogs', () => {
 
+
   test('POST returns blog as response', async () => {
-    const response = await api.post('/api/blogs').send(vars.blogToPost)
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
+    const response = await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
     expect(response.body.title).toEqual(vars.blogToPost.title)
   })
   test('Correct number of entries in DB', async () => {
-    await api.post('/api/blogs').send(vars.blogToPost)
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
+    await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
     const blogs = await Blog.find({})
     expect(blogs.length).toEqual(vars.initialBlogs.length + 1)
   })
   test('Correct blog added to DB', async () => {
-    await api.post('/api/blogs').send(vars.blogToPost)
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
+    await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
     const blogs = await Blog.find({})
     const titles = blogs.map(blog => blog.title)
     expect(titles).toContain(vars.blogToPost.title)
   })
   test('if likes is missing, defaults to zero', async () => {
-    const response = await api.post('/api/blogs').send(vars.blogWithoutLikesSpecified)
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
+    const response = await api.post('/api/blogs').send({...vars.blogWithoutLikesSpecified, user: userID})
     expect(response.body.likes).toEqual(0)
     const blog = await Blog.find({ title: vars.blogWithoutLikesSpecified.title })
     expect(blog[0].likes).toEqual(0)
   })
   test('if url or title is missing, 400', async () => {
-    const missingUrlReq = await api.post('/api/blogs').send(vars.blogWithoutURL)
-    const missingTitleReq = await api.post('/api/blogs').send(vars.blogWithoutTitle)
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
+    const missingUrlReq = await api.post('/api/blogs').send({...vars.blogWithoutURL, user: userID})
+    const missingTitleReq = await api.post('/api/blogs').send({...vars.blogWithoutTitle, user: userID})
     expect(missingUrlReq.status).toEqual(400)
     expect(missingTitleReq.status).toEqual(400)
+  })
+  test('blog ID appended to user', async () => {
+    var users = await helper.usersinDB()
+    const userID = users[0]._id
+    const newBlog = await api.post('/api/blogs').send({...vars.blogToPost, user: userID})
+    users = await helper.usersinDB()
+    expect(users[0].blogs.includes((newBlog.body.id))).toEqual(true)
   })
 
 })
@@ -109,10 +141,12 @@ describe('put requests', () => {
     expect(blog.author).toEqual('this is a new author')
   })
   test('returns changed note', async () => {
+    const users = await helper.usersinDB()
+    const userID = users[0]._id
     const blogs = await api.get('/api/blogs')
     const newLikes = 1234
     const id = blogs.body[0].id
-    const expectedResult = {...blogs.body[0], likes: newLikes}
+    const expectedResult = {...blogs.body[0], likes: newLikes, user: String(userID)}
     const response = await api.put(`/api/blogs/${id}`).send({likes: newLikes})
     expect(response.body).toEqual(expectedResult)
   })

@@ -4,7 +4,12 @@ const userSchema = new mongoose.Schema(
   {
     username: String,
     name: String,
-    passwordHash: String
+    passwordHash: String,
+    blogs: {
+      type: Array,
+      default: [],
+      ref: 'Blog'
+    }
   }
 )
 userSchema.set('toJSON', {

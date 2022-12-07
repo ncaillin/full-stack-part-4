@@ -38,6 +38,7 @@ const blogWithoutURL = {
   likes: 12
 }
 
+
 module.exports = {
   initialBlogs,
   blogToPost,
