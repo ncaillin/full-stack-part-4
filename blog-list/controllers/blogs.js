@@ -6,13 +6,6 @@ const jwt = require('jsonwebtoken')
 
 blogRouter.use(express.json())
 
-const getTokenFrom = request => {
-  const authorization = request.get('authorization')
-  if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-    return authorization.substring(7)
-  }
-}
-
 blogRouter.get(
   '/', async (request, response, next) => {
     try {
@@ -42,14 +35,11 @@ blogRouter.get(
 blogRouter.post(
   '/', async (request,response, next) => {
     try {
-      const token = getTokenFrom(request)
-      const decodedToken = jwt.verify(token, process.env.SECRET)
+      const decodedToken = jwt.verify(request.token, process.env.SECRET)
       if (!decodedToken) {
         return response.status(401).json({error: 'token missing or invalid'})
       }
       const user = await User.findById(decodedToken.id)
-      console.log(user)
-      console.log(request.body)
       const blogObject = {
         author: request.body.author,
         title: request.body.title,
